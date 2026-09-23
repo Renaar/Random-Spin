@@ -1,9 +1,9 @@
-# Random Spin — service statique servi par nginx.
-# Emplacement attendu sur le serveur : /opt/stacks/random-spin/
+# Heureux Hasard — service statique servi par nginx.
+# Emplacement attendu sur le serveur : /opt/stacks/heureux-hasard/
 services:
-  random-spin:
+  heureux-hasard:
     image: nginx:alpine
-    container_name: random-spin
+    container_name: heureux-hasard
     restart: unless-stopped
     ports:
       - "3004:80"

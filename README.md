@@ -1,4 +1,4 @@
-# Random Spin
+# Heureux Hasard
 
 Application web pour **tirer au sort avec une roue** et **former des groupes
 aléatoires** en classe, projetée au beamer. Même esprit que *Plan de Classe* :
@@ -34,7 +34,7 @@ est ensuite amenée sur lui.
 ## Arborescence sur le serveur
 
 ```
-/opt/stacks/random-spin/
+/opt/stacks/heureux-hasard/
 ├── docker-compose.yml
 ├── deploy.sh
 ├── public/
@@ -50,16 +50,16 @@ Seul `public/` est monté (en lecture seule) dans nginx, servi sur le port **300
 Sur le serveur, une seule commande (installe la première fois, met à jour ensuite) :
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Renaar/Random-Spin/main/deploy.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Renaar/Heureux-Hasard/main/deploy.sh | bash
 ```
 
 ou, une fois installé :
 
 ```bash
-bash /opt/stacks/random-spin/deploy.sh
+bash /opt/stacks/heureux-hasard/deploy.sh
 ```
 
-Le script clone (ou met à jour) le dépôt dans `/opt/stacks/random-spin`, ouvre
+Le script clone (ou met à jour) le dépôt dans `/opt/stacks/heureux-hasard`, ouvre
 le port 3004 dans `ufw` s'il est actif, puis lance `docker compose up -d`.
 L'application est ensuite disponible sur `http://<adresse-du-serveur>:3004`.
 
@@ -71,6 +71,6 @@ le dossier est monté, pas copié, donc aucun redémarrage n'est nécessaire.
 ## Où vivent les données ?
 
 Tout est enregistré dans le `localStorage` du **navigateur qui ouvre la page**,
-sous la clé `random-spin/v1` : rien n'est stocké sur le serveur, rien n'est
+sous la clé `heureux-hasard/v1` : rien n'est stocké sur le serveur, rien n'est
 partagé entre deux machines. Utilisez l'export JSON (onglet « Listes ») pour
 sauvegarder ou transférer vos listes.

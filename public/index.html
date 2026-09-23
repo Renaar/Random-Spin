@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Random Spin</title>
+<title>Heureux Hasard</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 16L16 2A14 14 0 0 1 30 16Z' fill='%23FFD166'/%3E%3Cpath d='M16 16L30 16A14 14 0 0 1 16 30Z' fill='%238ECAE6'/%3E%3Cpath d='M16 16L16 30A14 14 0 0 1 2 16Z' fill='%23F4978E'/%3E%3Cpath d='M16 16L2 16A14 14 0 0 1 16 2Z' fill='%23B5E48C'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%231d4ed8'/%3E%3C/svg%3E">
 <style>
 /* ==========================================================================
-   RANDOM SPIN — feuille de style unique
+   HEUREUX HASARD — feuille de style unique
    Sections : 1) bases  2) coquille  3) roue  4) groupes  5) outils
               6) listes  7) projection & impression
    ========================================================================== */
@@ -288,7 +288,7 @@ body.projection .groupe .tete{font-size:22px}
 
 <!-- ====================== BARRE + ONGLETS ====================== -->
 <header id="barre">
-  <div class="marque">Random <span>Spin</span></div>
+  <div class="marque">Heureux <span>Hasard</span></div>
   <nav class="onglets">
     <button data-ecran="roue" class="actif">Roue</button>
     <button data-ecran="groupes">Groupes</button>
@@ -635,7 +635,8 @@ async function copierTexte(texte, bouton) {
    2. ÉTAT & PERSISTANCE
    ========================================================================== */
 
-const CLE_STOCKAGE = "random-spin/v1";
+const CLE_STOCKAGE = "heureux-hasard/v1";
+const ANCIENNE_CLE = "random-spin/v1";      // nom du projet avant le renommage
 const MAX_HISTORIQUE_GROUPES = 8;
 const EXEMPLE = [
   "Marie Curie", "Albert Einstein", "Isaac Newton", "Ada Lovelace", "Charles Darwin", "Rosalind Franklin",
@@ -670,7 +671,7 @@ let etat = null;
 
 function charger() {
   try {
-    const brut = localStorage.getItem(CLE_STOCKAGE);
+    const brut = localStorage.getItem(CLE_STOCKAGE) || localStorage.getItem(ANCIENNE_CLE);
     return brut ? normaliser(JSON.parse(brut)) : etatParDefaut();
   } catch (e) {
     console.warn("Lecture du stockage impossible :", e);
@@ -1553,8 +1554,8 @@ function telecharger(nomFichier, blob) {
 $("#btn-export-json").addEventListener("click", () => {
   const d = new Date();
   const p = n => String(n).padStart(2, "0");
-  const blob = new Blob([JSON.stringify(Object.assign({ app: "random-spin" }, etat), null, 2)], { type: "application/json" });
-  telecharger(`random-spin-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`, blob);
+  const blob = new Blob([JSON.stringify(Object.assign({ app: "heureux-hasard" }, etat), null, 2)], { type: "application/json" });
+  telecharger(`heureux-hasard-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`, blob);
 });
 $("#btn-import-json").addEventListener("click", () => $("#fichier-import").click());
 $("#fichier-import").addEventListener("change", e => {
@@ -1589,7 +1590,7 @@ $("#fichier-import").addEventListener("change", e => {
       sauver();
       toutRendre();
     } catch (err) {
-      alert("Ce fichier n'est pas un export « Random Spin » ou « Plan de Classe » valide.");
+      alert("Ce fichier n'est pas un export « Heureux Hasard » ou « Plan de Classe » valide.");
     }
   };
   lecteur.readAsText(fichier);
