@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Random Spin</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 16L16 2A14 14 0 0 1 30 16Z' fill='%23FFD166'/%3E%3Cpath d='M16 16L30 16A14 14 0 0 1 16 30Z' fill='%238ECAE6'/%3E%3Cpath d='M16 16L16 30A14 14 0 0 1 2 16Z' fill='%23F4978E'/%3E%3Cpath d='M16 16L2 16A14 14 0 0 1 16 2Z' fill='%23B5E48C'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%231d4ed8'/%3E%3C/svg%3E">
+<style>
+/* ==========================================================================
+   RANDOM SPIN — feuille de style unique
+   Sections : 1) bases  2) coquille  3) roue  4) groupes  5) outils
+              6) listes  7) projection & impression
+   ========================================================================== */
+
+/* ---------- 1. Bases ---------- */
+:root{
+  --fond:#f7f7f4;
+  --surface:#ffffff;
+  --bord:#e3e3e8;
+  --bord-fort:#c9c9d2;
+  --texte:#1b1b1f;
+  --doux:#6b6b76;
+  --accent:#1d4ed8;
+  --accent-sombre:#173da8;
+  --accent-pale:#e9eefc;
+  --alerte:#b42318;
+  --alerte-fond:#fdecea;
+  --ok:#166534;
+  --ok-fond:#eaf6ec;
+  --rayon:10px;
+  --ombre:0 1px 2px rgba(0,0,0,.05), 0 2px 10px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100%}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:var(--fond);color:var(--texte);font-size:15px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0 0 .4em;line-height:1.2}
+h2{font-size:17px}
+h3{font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:var(--doux)}
+p{margin:.4em 0}
+button,input,select,textarea{font:inherit;color:inherit}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--surface);border:1px solid var(--bord-fort);border-radius:8px;
+  padding:7px 12px;cursor:pointer;white-space:nowrap;
+  transition:background .12s ease, border-color .12s ease;
+}
+.btn:hover{background:#f1f1f4}
+.btn:active{background:#e8e8ee}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.primaire{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.primaire:hover{background:var(--accent-sombre)}
+.btn.danger{color:var(--alerte);border-color:#e7b9b4}
+.btn.danger:hover{background:var(--alerte-fond)}
+.btn.actif{background:var(--accent-pale);border-color:var(--accent);color:var(--accent-sombre);font-weight:600}
+.btn.mini{padding:3px 8px;font-size:13px;border-radius:6px}
+.btn.grand{padding:11px 20px;font-size:17px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+input[type=text],input[type=number],select,textarea{
+  background:var(--surface);border:1px solid var(--bord-fort);border-radius:8px;padding:7px 9px;width:100%;
+}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+input[type=checkbox],input[type=radio]{accent-color:var(--accent);width:16px;height:16px;margin:0}
+label{cursor:pointer}
+.carte-ui{background:var(--surface);border:1px solid var(--bord);border-radius:var(--rayon);box-shadow:var(--ombre);padding:14px}
+.ligne{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.discret{color:var(--doux);font-size:13px}
+.option{display:flex;align-items:center;gap:8px;padding:4px 0}
+.vide{
+  text-align:center;color:var(--doux);padding:30px 16px;border:2px dashed var(--bord-fort);border-radius:var(--rayon);
+}
+.pile>*+*{margin-top:14px}
+
+/* ---------- 2. Coquille (barre + onglets) ---------- */
+#barre{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  padding:10px 18px;background:var(--surface);border-bottom:1px solid var(--bord);
+  position:sticky;top:0;z-index:30;
+}
+#barre .marque{font-weight:700;font-size:17px;letter-spacing:-.2px}
+#barre .marque span{color:var(--accent)}
+nav.onglets{display:flex;gap:4px;flex-wrap:wrap}
+nav.onglets button{
+  background:none;border:1px solid transparent;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:500;
+}
+nav.onglets button:hover{background:#f1f1f4}
+nav.onglets button.actif{background:var(--accent-pale);color:var(--accent-sombre);font-weight:600}
+#barre .droite{margin-left:auto;display:flex;align-items:center;gap:10px}
+#barre select{width:auto;min-width:150px}
+
+main{padding:18px;max-width:1500px;margin:0 auto}
+.ecran{display:none}
+.ecran.visible{display:block}
+.deux-colonnes.visible{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:16px;align-items:start}
+@media (max-width:900px){ .deux-colonnes.visible{grid-template-columns:1fr} }
+
+/* ---------- 3. Roue ---------- */
+.scene-roue{display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0 20px}
+.roue-boite{
+  position:relative;width:min(100%, calc(100vh - 190px));min-width:260px;aspect-ratio:1;
+}
+#canevas-roue{width:100%;height:100%;display:block;border-radius:50%;box-shadow:0 6px 30px rgba(0,0,0,.12)}
+.pointeur{
+  position:absolute;top:-10px;left:50%;width:44px;height:52px;margin-left:-22px;z-index:2;
+  transform-origin:50% 12px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));pointer-events:none;
+}
+.pointeur.tic{animation:tic .12s ease-out}
+@keyframes tic{ 0%{transform:rotate(0)} 40%{transform:rotate(-14deg)} 100%{transform:rotate(0)} }
+#btn-centre{
+  position:absolute;left:50%;top:50%;width:19%;height:19%;transform:translate(-50%,-50%);
+  border-radius:50%;border:5px solid #fff;background:var(--accent);color:#fff;font-weight:800;
+  font-size:clamp(12px, 2.2vmin, 22px);cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.25);
+  transition:transform .12s ease, background .12s ease;
+}
+#btn-centre:hover{background:var(--accent-sombre);transform:translate(-50%,-50%) scale(1.05)}
+#btn-centre[disabled]{background:#9aa3b5;cursor:not-allowed;transform:translate(-50%,-50%)}
+.aide-clavier{color:var(--doux);font-size:13px}
+kbd{border:1px solid var(--bord-fort);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:12px;background:#fff}
+
+#liste-tires{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:44vh;overflow:auto}
+#liste-tires li{
+  display:flex;align-items:center;gap:8px;padding:5px 6px 5px 8px;border:1px solid var(--bord);border-radius:8px;background:#fafafc;
+}
+#liste-tires .rang{font-weight:700;color:var(--doux);min-width:22px;font-variant-numeric:tabular-nums}
+#liste-tires .nom{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.compteur-roue{font-size:30px;font-weight:700;line-height:1}
+.compteur-roue small{font-size:14px;font-weight:500;color:var(--doux)}
+
+/* Fenêtre du résultat */
+#resultat{
+  position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;
+  background:rgba(20,22,30,.45);padding:20px;
+}
+#resultat.visible{display:flex}
+#resultat .boite{
+  background:var(--surface);border-radius:18px;padding:28px 36px 24px;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);max-width:min(92vw, 1100px);animation:apparition .35s cubic-bezier(.2,1.4,.4,1);
+}
+#resultat .surtitre{color:var(--doux);font-size:15px;text-transform:uppercase;letter-spacing:2px;font-weight:600}
+#resultat .gagnant{
+  font-size:clamp(40px, 9vw, 120px);font-weight:800;line-height:1.1;margin:10px 0 22px;
+  overflow-wrap:anywhere;padding:6px 22px;border-radius:14px;
+}
+@keyframes apparition{ from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+#confettis{position:fixed;inset:0;pointer-events:none;z-index:70;width:100vw;height:100vh}
+
+/* ---------- 4. Groupes ---------- */
+.choix-mode{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.choix-mode .btn{width:100%;white-space:normal;font-size:13px;line-height:1.25;padding:7px 6px}
+.compteur-nb{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;margin-top:8px}
+.compteur-nb input{text-align:center;font-size:20px;font-weight:700;padding:4px}
+#apercu-groupes{margin-top:6px}
+#zone-roles{min-height:96px;resize:vertical;line-height:1.5;margin-top:6px}
+.paire{
+  display:inline-flex;align-items:center;gap:6px;background:#fafafc;border:1px solid var(--bord);
+  border-radius:8px;padding:3px 4px 3px 9px;font-size:13px;margin:3px 3px 0 0;
+}
+.paire button{border:none;background:none;cursor:pointer;color:var(--doux);padding:1px 6px;border-radius:6px}
+.paire button:hover{background:var(--alerte-fond);color:var(--alerte)}
+.ajout-paire{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-top:8px}
+
+.barre-resultat{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.barre-resultat .droite{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+#grille-groupes{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.groupe{
+  background:var(--surface);border:1px solid var(--bord);border-radius:12px;box-shadow:var(--ombre);
+  overflow:hidden;border-top:6px solid var(--teinte, var(--accent));transition:box-shadow .12s ease, transform .12s ease;
+}
+.groupe.survol{box-shadow:0 0 0 3px var(--accent);transform:scale(1.01)}
+.groupe .tete{display:flex;align-items:center;gap:8px;padding:9px 12px 6px;font-weight:700;font-size:17px}
+.groupe .tete .nb{margin-left:auto;font-size:12px;font-weight:600;color:var(--doux);background:#f1f1f4;border-radius:999px;padding:1px 8px}
+.groupe ul{list-style:none;margin:0;padding:4px 10px 12px;display:flex;flex-direction:column;gap:5px;min-height:40px}
+.membre{
+  display:flex;align-items:baseline;gap:8px;padding:6px 10px;border-radius:8px;font-weight:600;font-size:16px;
+  background:var(--fond-membre, #f1f1f4);cursor:grab;user-select:none;
+}
+.membre em{margin-left:auto;font-style:normal;font-weight:500;font-size:12px;color:#3b3b44;white-space:nowrap}
+.membre.cache{visibility:hidden}
+.membre.pop{animation:pop .32s cubic-bezier(.2,1.5,.4,1)}
+.membre.glisse{opacity:.4}
+@keyframes pop{ from{transform:scale(.3) translateY(-18px);opacity:0} to{transform:none;opacity:1} }
+
+/* ---------- 5. Outils ---------- */
+#ecran-outils.visible{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px;align-items:start}
+.outil h2{display:flex;align-items:center;gap:8px}
+.gros-resultat{
+  font-size:64px;font-weight:800;text-align:center;line-height:1.1;padding:14px 0;min-height:100px;
+  font-variant-numeric:tabular-nums;
+}
+#ordre-passage{margin:10px 0 0;padding-left:0;list-style:none;counter-reset:rang;max-height:420px;overflow:auto}
+#ordre-passage li{
+  counter-increment:rang;display:flex;gap:10px;align-items:center;padding:5px 8px;border-radius:8px;
+  animation:pop .3s cubic-bezier(.2,1.5,.4,1) both;
+}
+#ordre-passage li:nth-child(odd){background:#fafafc}
+#ordre-passage li::before{content:counter(rang);font-weight:700;color:var(--doux);min-width:24px;font-variant-numeric:tabular-nums}
+
+.scene-piece{perspective:700px;display:flex;justify-content:center;padding:14px 0}
+.piece{
+  width:130px;height:130px;position:relative;transform-style:preserve-3d;
+  transition:transform 1.6s cubic-bezier(.2,.7,.2,1);
+}
+.piece .face{
+  position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:24px;letter-spacing:1px;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:radial-gradient(circle at 35% 30%, #fff3c4, #f2c14e 55%, #c8962a);color:#6b4a07;
+  border:5px solid #d9a93a;box-shadow:inset 0 0 0 4px rgba(255,255,255,.35);
+}
+.piece .face.dos{transform:rotateY(180deg);background:radial-gradient(circle at 35% 30%, #f4f4f6, #c5c8cf 55%, #8d919b);color:#33363d;border-color:#a9adb6}
+
+.des{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:14px 0 6px;min-height:100px}
+.de{
+  width:72px;height:72px;border-radius:14px;background:#fff;border:2px solid var(--bord-fort);
+  display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;
+  box-shadow:0 3px 0 var(--bord-fort);font-variant-numeric:tabular-nums;
+}
+.de.roule{animation:secoue .1s linear infinite}
+@keyframes secoue{ 0%{transform:rotate(-8deg)} 50%{transform:rotate(8deg)} 100%{transform:rotate(-8deg)} }
+.total-des{text-align:center;color:var(--doux);min-height:22px}
+
+.minuteur{font-size:78px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;line-height:1.1;padding:8px 0}
+.minuteur.fini{color:var(--alerte);animation:clignote .6s steps(2) 6}
+@keyframes clignote{ 50%{opacity:.25} }
+.barre-temps{height:8px;background:#ececf1;border-radius:999px;overflow:hidden;margin-bottom:12px}
+.barre-temps div{height:100%;background:var(--accent);width:100%;transition:width .25s linear}
+.grille-boutons{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.champs-deux{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.champs-deux label{font-size:13px;color:var(--doux)}
+
+/* ---------- 6. Listes ---------- */
+#ecran-listes.visible{display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:800px){ #ecran-listes.visible{grid-template-columns:1fr} }
+#liste-listes{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:4px}
+#liste-listes li button{
+  width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:8px;
+  padding:7px 10px;cursor:pointer;font-weight:500;display:flex;gap:8px;
+}
+#liste-listes li button .nb{margin-left:auto;color:var(--doux);font-weight:500;font-size:13px}
+#liste-listes li button:hover{background:#f1f1f4}
+#liste-listes li button.actif{background:var(--accent-pale);color:var(--accent-sombre);font-weight:600}
+#zone-noms{min-height:260px;resize:vertical;line-height:1.6}
+#pastilles{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pastille{
+  display:inline-flex;align-items:center;gap:6px;background:var(--surface);
+  border:1px solid var(--bord-fort);border-radius:999px;padding:4px 12px;font-size:14px;cursor:pointer;
+}
+.pastille:hover{border-color:var(--accent)}
+.pastille.absente{opacity:.5;text-decoration:line-through}
+.pastille .point{width:9px;height:9px;border-radius:50%}
+#compteur-noms{font-size:17px;font-weight:600;margin-top:12px}
+.colonnes-listes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:1100px){ .colonnes-listes{grid-template-columns:1fr} }
+
+/* ---------- 7. Projection & impression ---------- */
+#btn-quitter-projection{position:fixed;top:10px;right:10px;z-index:50;display:none;opacity:.55}
+#btn-quitter-projection:hover{opacity:1}
+body.projection #barre, body.projection .cote, body.projection .masque-projection{display:none !important}
+body.projection #btn-quitter-projection{display:inline-flex}
+body.projection main{max-width:none;padding:14px 20px}
+body.projection .deux-colonnes.visible{grid-template-columns:1fr}
+body.projection .roue-boite{width:min(100%, calc(100vh - 110px))}
+body.projection #grille-groupes{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+body.projection .membre{font-size:21px}
+body.projection .groupe .tete{font-size:22px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+@media print{
+  #barre,.cote,.masque-projection,#btn-quitter-projection,#resultat,#confettis{display:none !important}
+  body{background:#fff}
+  main{padding:0;max-width:none}
+  .deux-colonnes.visible{display:block}
+  .groupe,.carte-ui{box-shadow:none;break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .membre{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #grille-groupes{grid-template-columns:repeat(3,1fr)}
+  .titre-impression{display:block !important}
+}
+.titre-impression{display:none;font-size:20px;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- ====================== BARRE + ONGLETS ====================== -->
+<header id="barre">
+  <div class="marque">Random <span>Spin</span></div>
+  <nav class="onglets">
+    <button data-ecran="roue" class="actif">Roue</button>
+    <button data-ecran="groupes">Groupes</button>
+    <button data-ecran="outils">Outils</button>
+    <button data-ecran="listes">Listes</button>
+  </nav>
+  <div class="droite">
+    <label class="discret" for="choix-liste">Liste&nbsp;:</label>
+    <select id="choix-liste" aria-label="Liste courante"></select>
+    <button class="btn" id="btn-projection" title="Plein écran pour le beamer (touche F)">⛶ Projeter</button>
+  </div>
+</header>
+<button class="btn" id="btn-quitter-projection">✕ Quitter la projection</button>
+
+<main>
+
+<!-- ====================== ÉCRAN ROUE ====================== -->
+<section id="ecran-roue" class="ecran deux-colonnes visible">
+  <div class="scene-roue">
+    <div class="roue-boite" id="roue-boite">
+      <svg class="pointeur" id="pointeur" viewBox="0 0 44 52" aria-hidden="true">
+        <path d="M22 50 L4 12 A18 18 0 1 1 40 12 Z" fill="#1b1b1f"/>
+        <circle cx="22" cy="13" r="6" fill="#fff"/>
+      </svg>
+      <canvas id="canevas-roue" aria-label="Roue de tirage au sort"></canvas>
+      <button id="btn-centre" title="Tourner la roue (Espace)">TOURNER</button>
+    </div>
+    <div class="aide-clavier masque-projection"><kbd>Espace</kbd> tourner la roue · <kbd>F</kbd> plein écran</div>
+  </div>
+
+  <aside class="cote pile">
+    <div class="carte-ui">
+      <h3>Dans la roue</h3>
+      <div class="compteur-roue" id="compteur-roue">0</div>
+      <p class="discret" id="detail-roue"></p>
+    </div>
+
+    <div class="carte-ui">
+      <h3>Réglages</h3>
+      <label class="option"><input type="checkbox" id="opt-retrait"> Retirer le nom tiré de la roue</label>
+      <label class="option"><input type="checkbox" id="opt-son"> Sons</label>
+      <label class="option"><input type="checkbox" id="opt-confettis"> Confettis</label>
+      <div class="option">Durée&nbsp;:
+        <select id="opt-duree" style="width:auto">
+          <option value="court">Courte (3 s)</option>
+          <option value="normal">Normale (6 s)</option>
+          <option value="long">Suspense (10 s)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="carte-ui">
+      <div class="ligne"><h3 style="margin:0">Déjà tirés</h3>
+        <button class="btn mini" id="btn-remettre-tous" style="margin-left:auto">Remettre tout le monde</button>
+      </div>
+      <p class="discret" id="aucun-tire">Personne pour l'instant.</p>
+      <ol id="liste-tires"></ol>
+    </div>
+  </aside>
+</section>
+
+<!-- ====================== ÉCRAN GROUPES ====================== -->
+<section id="ecran-groupes" class="ecran deux-colonnes">
+  <div>
+    <div class="barre-resultat masque-projection">
+      <button class="btn primaire grand" id="btn-former">🎲 Former les groupes</button>
+      <select id="choix-historique" style="width:auto" aria-label="Groupes précédents"></select>
+      <div class="droite">
+        <button class="btn" id="btn-copier-groupes">Copier</button>
+        <button class="btn" id="btn-imprimer-groupes">Imprimer</button>
+      </div>
+    </div>
+    <h2 class="titre-impression" id="titre-impression"></h2>
+    <div id="grille-groupes"></div>
+    <p class="discret masque-projection" id="aide-glisser" style="margin-top:12px">
+      Astuce : glissez un nom d'un groupe à l'autre pour ajuster à la main.
+    </p>
+  </div>
+
+  <aside class="cote pile">
+    <div class="carte-ui">
+      <h3>Former</h3>
+      <div class="choix-mode">
+        <button class="btn" data-mode="nombre">Nombre de groupes</button>
+        <button class="btn" data-mode="taille">Élèves par groupe</button>
+      </div>
+      <div class="compteur-nb">
+        <button class="btn" id="btn-moins" aria-label="Moins">−</button>
+        <input type="number" id="valeur-groupes" min="1" max="99" aria-label="Valeur">
+        <button class="btn" id="btn-plus" aria-label="Plus">+</button>
+      </div>
+      <p class="discret" id="apercu-groupes"></p>
+    </div>
+
+    <div class="carte-ui">
+      <h3>Options</h3>
+      <div class="option">Noms des groupes&nbsp;:
+        <select id="opt-theme" style="width:auto">
+          <option value="numeros">Groupe 1, 2, 3…</option>
+          <option value="planetes">Planètes</option>
+          <option value="elements">Éléments chimiques</option>
+          <option value="animaux">Animaux des Alpes</option>
+          <option value="couleurs">Couleurs</option>
+        </select>
+      </div>
+      <label class="option"><input type="checkbox" id="opt-eviter"> Éviter les mêmes binômes que la fois d'avant</label>
+      <label class="option"><input type="checkbox" id="opt-roles"> Distribuer des rôles</label>
+      <textarea id="zone-roles" spellcheck="false" aria-label="Rôles, un par ligne"></textarea>
+    </div>
+
+    <div class="carte-ui">
+      <h3>À séparer</h3>
+      <p class="discret" style="margin-top:0">Ces élèves ne seront jamais dans le même groupe.</p>
+      <div id="liste-paires"></div>
+      <div class="ajout-paire">
+        <select id="paire-a" aria-label="Premier élève"></select>
+        <select id="paire-b" aria-label="Second élève"></select>
+        <button class="btn" id="btn-ajout-paire">+</button>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<!-- ====================== ÉCRAN OUTILS ====================== -->
+<section id="ecran-outils" class="ecran">
+  <div class="carte-ui outil">
+    <h2>🔢 Ordre de passage</h2>
+    <p class="discret">Mélange toute la liste d'un coup : pratique pour les exposés ou les corrections au tableau.</p>
+    <div class="ligne">
+      <button class="btn primaire" id="btn-ordre">Mélanger</button>
+      <button class="btn" id="btn-copier-ordre">Copier</button>
+    </div>
+    <ol id="ordre-passage"></ol>
+  </div>
+
+  <div class="carte-ui outil">
+    <h2>⏱️ Minuteur</h2>
+    <div class="minuteur" id="minuteur">05:00</div>
+    <div class="barre-temps"><div id="barre-temps"></div></div>
+    <div class="grille-boutons" id="presets-minuteur">
+      <button class="btn" data-min="1">1 min</button>
+      <button class="btn" data-min="2">2 min</button>
+      <button class="btn" data-min="3">3 min</button>
+      <button class="btn" data-min="5">5 min</button>
+      <button class="btn" data-min="10">10 min</button>
+      <button class="btn" data-min="15">15 min</button>
+    </div>
+    <div class="ligne" style="margin-top:10px">
+      <button class="btn primaire" id="btn-minuteur" style="flex:1">Démarrer</button>
+      <button class="btn" id="btn-minuteur-raz">Remettre</button>
+    </div>
+  </div>
+
+  <div class="carte-ui outil">
+    <h2>🪙 Pile ou face</h2>
+    <div class="scene-piece">
+      <div class="piece" id="piece">
+        <div class="face">PILE</div>
+        <div class="face dos">FACE</div>
+      </div>
+    </div>
+    <div class="ligne"><button class="btn primaire" id="btn-piece" style="flex:1">Lancer la pièce</button></div>
+    <p class="discret" id="stats-piece" style="text-align:center"></p>
+  </div>
+
+  <div class="carte-ui outil">
+    <h2>🎲 Dés</h2>
+    <div class="champs-deux">
+      <label>Nombre de dés
+        <select id="nb-des"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
+      </label>
+      <label>Faces
+        <select id="faces-des"><option>4</option><option selected>6</option><option>8</option><option>10</option><option>12</option><option>20</option></select>
+      </label>
+    </div>
+    <div class="des" id="des"></div>
+    <p class="total-des" id="total-des"></p>
+    <div class="ligne"><button class="btn primaire" id="btn-des" style="flex:1">Lancer</button></div>
+  </div>
+
+  <div class="carte-ui outil">
+    <h2>🎯 Nombre au hasard</h2>
+    <div class="champs-deux">
+      <label>De <input type="number" id="nb-min" value="1"></label>
+      <label>À <input type="number" id="nb-max" value="100"></label>
+    </div>
+    <div class="gros-resultat" id="nb-resultat">?</div>
+    <div class="ligne"><button class="btn primaire" id="btn-nombre" style="flex:1">Tirer un nombre</button></div>
+  </div>
+</section>
+
+<!-- ====================== ÉCRAN LISTES ====================== -->
+<section id="ecran-listes" class="ecran">
+  <div class="carte-ui">
+    <h3>Mes listes</h3>
+    <ul id="liste-listes"></ul>
+    <div class="ligne">
+      <button class="btn mini primaire" id="btn-nouvelle-liste">+ Nouvelle</button>
+      <button class="btn mini" id="btn-renommer-liste">Renommer</button>
+      <button class="btn mini" id="btn-dupliquer-liste">Dupliquer</button>
+      <button class="btn mini danger" id="btn-supprimer-liste">Supprimer</button>
+    </div>
+
+    <h3 style="margin-top:20px">Données</h3>
+    <div class="ligne">
+      <button class="btn mini" id="btn-export-json">Exporter (JSON)</button>
+      <button class="btn mini" id="btn-import-json">Importer…</button>
+      <input type="file" id="fichier-import" accept="application/json,.json" hidden>
+    </div>
+    <p class="discret">
+      L'import accepte aussi un export de <strong>Plan de Classe</strong> : ses classes deviennent des listes.
+      Tout reste dans ce navigateur — pensez à exporter de temps en temps.
+    </p>
+  </div>
+
+  <div class="carte-ui">
+    <div class="colonnes-listes">
+      <div>
+        <h3>Noms — un par ligne</h3>
+        <textarea id="zone-noms" spellcheck="false" placeholder="Collez ici une colonne de noms (depuis un tableur, un courriel…)"></textarea>
+        <p class="discret">Ça marche aussi pour autre chose que des élèves : sujets d'exposé, questions, expériences…</p>
+      </div>
+      <div>
+        <h3>Présents aujourd'hui</h3>
+        <p class="discret" style="margin-top:0">Cliquez sur un nom pour le marquer absent : il ne sera ni dans la roue, ni dans les groupes.</p>
+        <div id="pastilles"></div>
+        <div id="compteur-noms"></div>
+        <div class="ligne" style="margin-top:10px">
+          <button class="btn mini" id="btn-tous-presents">Tous présents</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ====================== RÉSULTAT DE LA ROUE ====================== -->
+<div id="resultat" role="dialog" aria-modal="true" aria-labelledby="gagnant">
+  <div class="boite">
+    <div class="surtitre">Et c'est…</div>
+    <div class="gagnant" id="gagnant"></div>
+    <div class="ligne" style="justify-content:center">
+      <button class="btn" id="btn-resultat-action"></button>
+      <button class="btn primaire" id="btn-resultat-ok">Continuer</button>
+    </div>
+  </div>
+</div>
+<canvas id="confettis"></canvas>
+
+<script>
+"use strict";
+/* ==========================================================================
+   1. UTILITAIRES
+   ========================================================================== */
+
+const $  = (sel, racine = document) => racine.querySelector(sel);
+const $$ = (sel, racine = document) => Array.from(racine.querySelectorAll(sel));
+
+let compteurId = 0;
+function uid(prefixe) {
+  compteurId += 1;
+  return prefixe + "-" + Date.now().toString(36) + "-" + compteurId.toString(36);
+}
+
+/** Source d'aléa : crypto.getRandomValues, sans pondération. */
+const tamponAlea = new Uint32Array(1);
+function aleaBrut() {
+  if (self.crypto && self.crypto.getRandomValues) {
+    self.crypto.getRandomValues(tamponAlea);
+    return tamponAlea[0];
+  }
+  return Math.floor(Math.random() * 4294967296);
+}
+/** Entier uniforme dans [0, n) — tirage par rejet, donc sans biais modulo. */
+function aleaEntier(n) {
+  if (n <= 1) return 0;
+  const limite = Math.floor(4294967296 / n) * n;
+  let v = aleaBrut();
+  while (v >= limite) v = aleaBrut();
+  return v % n;
+}
+/** Réel uniforme dans [0, 1). */
+function aleaReel() { return aleaBrut() / 4294967296; }
+/** Mélange de Fisher-Yates, en place, renvoie le tableau. */
+function melanger(tab) {
+  for (let i = tab.length - 1; i > 0; i--) {
+    const j = aleaEntier(i + 1);
+    const tmp = tab[i]; tab[i] = tab[j]; tab[j] = tmp;
+  }
+  return tab;
+}
+
+/** Hachage stable d'une chaîne (FNV-1a) — sert à la couleur des noms. */
+function hachage(txt) {
+  let h = 2166136261;
+  for (let i = 0; i < txt.length; i++) {
+    h ^= txt.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/** Palette de 8 teintes vives, toutes lisibles avec un texte foncé. */
+const PALETTE = ["#FFD166", "#F4978E", "#B5E48C", "#8ECAE6", "#CDB4F6", "#7DD8C7", "#F9C0E0", "#FFA45B"];
+function couleurNom(nom) { return PALETTE[hachage(nom.toLowerCase()) % PALETTE.length]; }
+
+function echapper(txt) {
+  return String(txt).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+function dateLisible(iso) {
+  const d = new Date(iso);
+  const p = n => String(n).padStart(2, "0");
+  return d.getDate() + " " + MOIS[d.getMonth()] + " à " + p(d.getHours()) + "h" + p(d.getMinutes());
+}
+function modulo(a, b) { return ((a % b) + b) % b; }
+function borner(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function animationsReduites() {
+  return self.matchMedia && self.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+function pluriel(n, mot, motPluriel) { return n + " " + (n > 1 ? (motPluriel || mot + "s") : mot); }
+
+async function copierTexte(texte, bouton) {
+  try {
+    await navigator.clipboard.writeText(texte);
+  } catch (e) {
+    // Repli : navigateurs sans presse-papiers (page servie en http:// hors localhost)
+    const zone = document.createElement("textarea");
+    zone.value = texte;
+    document.body.appendChild(zone);
+    zone.select();
+    try { document.execCommand("copy"); } catch (e2) { /* rien à faire */ }
+    zone.remove();
+  }
+  if (bouton) {
+    const avant = bouton.textContent;
+    bouton.textContent = "Copié ✓";
+    setTimeout(() => { bouton.textContent = avant; }, 1400);
+  }
+}
+
+/* ==========================================================================
+   2. ÉTAT & PERSISTANCE
+   ========================================================================== */
+
+const CLE_STOCKAGE = "random-spin/v1";
+const MAX_HISTORIQUE_GROUPES = 8;
+const EXEMPLE = [
+  "Marie Curie", "Albert Einstein", "Isaac Newton", "Ada Lovelace", "Charles Darwin", "Rosalind Franklin",
+  "Galilée", "Nikola Tesla", "Jane Goodall", "Louis Pasteur", "Émilie du Châtelet", "Auguste Piccard"
+];
+const ROLES_PAR_DEFAUT = "Porte-parole\nSecrétaire\nGardien·ne du temps\nResponsable du matériel";
+
+function nouvelleListe(nom, noms) {
+  return {
+    id: uid("li"),
+    nom: nom,
+    noms: (noms || []).map(n => ({ id: uid("n"), nom: n, absent: false })),
+    tires: [],          // identifiants retirés de la roue, dans l'ordre du tirage
+    separations: [],    // paires d'identifiants [a, b] à ne pas mettre ensemble
+    groupes: []         // historique des groupes formés, le plus récent en premier
+  };
+}
+
+const OPTIONS_PAR_DEFAUT = {
+  ecran: "roue",
+  retraitAuto: true, son: true, confettis: true, duree: "normal",
+  modeGroupes: "nombre", nombreGroupes: 4, tailleGroupes: 3,
+  theme: "numeros", eviterRepetitions: true, roles: false, listeRoles: ROLES_PAR_DEFAUT
+};
+
+function etatParDefaut() {
+  const l = nouvelleListe("Scientifiques (exemple)", EXEMPLE);
+  return { version: 1, listes: [l], listeCouranteId: l.id, options: Object.assign({}, OPTIONS_PAR_DEFAUT) };
+}
+
+let etat = null;
+
+function charger() {
+  try {
+    const brut = localStorage.getItem(CLE_STOCKAGE);
+    return brut ? normaliser(JSON.parse(brut)) : etatParDefaut();
+  } catch (e) {
+    console.warn("Lecture du stockage impossible :", e);
+    return etatParDefaut();
+  }
+}
+
+/** Complète les champs manquants : tolère un JSON importé légèrement différent. */
+function normaliser(d) {
+  if (!d || !Array.isArray(d.listes)) return etatParDefaut();
+  d.version = 1;
+  d.options = Object.assign({}, OPTIONS_PAR_DEFAUT, d.options || {});
+  d.listes.forEach(l => {
+    l.id = l.id || uid("li");
+    l.nom = String(l.nom || "Liste");
+    l.noms = (l.noms || []).map(n => ({ id: n.id || uid("n"), nom: String(n.nom || "?"), absent: !!n.absent }));
+    l.tires = Array.isArray(l.tires) ? l.tires : [];
+    l.separations = Array.isArray(l.separations) ? l.separations : [];
+    l.groupes = (Array.isArray(l.groupes) ? l.groupes : []).slice(0, MAX_HISTORIQUE_GROUPES);
+    nettoyerListe(l);
+  });
+  if (!d.listes.length) d.listes.push(nouvelleListe("Ma classe", []));
+  if (!d.listes.some(l => l.id === d.listeCouranteId)) d.listeCouranteId = d.listes[0].id;
+  return d;
+}
+
+/** Retire les références vers des noms qui n'existent plus. */
+function nettoyerListe(l) {
+  const ids = new Set(l.noms.map(n => n.id));
+  l.tires = l.tires.filter(id => ids.has(id));
+  l.separations = l.separations.filter(p => ids.has(p[0]) && ids.has(p[1]) && p[0] !== p[1]);
+}
+
+let minuterieSauvegarde = null;
+function sauver() {
+  clearTimeout(minuterieSauvegarde);
+  minuterieSauvegarde = setTimeout(() => {
+    try {
+      localStorage.setItem(CLE_STOCKAGE, JSON.stringify(etat));
+    } catch (e) {
+      alert("Impossible d'enregistrer les données dans ce navigateur (stockage plein ou désactivé).\nExportez votre JSON pour ne rien perdre.");
+    }
+  }, 120);
+}
+
+function listeCourante() { return etat.listes.find(l => l.id === etat.listeCouranteId) || etat.listes[0]; }
+function presents(l) { return l.noms.filter(n => !n.absent); }
+function dansLaRoue(l) {
+  const tires = new Set(l.tires);
+  return presents(l).filter(n => !tires.has(n.id));
+}
+function nomParId(l, id) { const n = l.noms.find(x => x.id === id); return n ? n.nom : "?"; }
+
+/* ==========================================================================
+   3. NAVIGATION & RENDU GÉNÉRAL
+   ========================================================================== */
+
+function allerEcran(nom) {
+  if (!$("#ecran-" + nom)) nom = "roue";
+  etat.options.ecran = nom;
+  $$(".ecran").forEach(s => s.classList.toggle("visible", s.id === "ecran-" + nom));
+  $$("nav.onglets button").forEach(b => b.classList.toggle("actif", b.dataset.ecran === nom));
+  if (nom === "roue") { dimensionnerRoue(); }
+  sauver();
+}
+$$("nav.onglets button").forEach(b => b.addEventListener("click", () => allerEcran(b.dataset.ecran)));
+
+function rendreSelecteurListe() {
+  const sel = $("#choix-liste");
+  sel.innerHTML = etat.listes.map(l =>
+    `<option value="${l.id}" ${l.id === etat.listeCouranteId ? "selected" : ""}>${echapper(l.nom)}</option>`).join("");
+}
+$("#choix-liste").addEventListener("change", e => changerListe(e.target.value));
+
+function changerListe(id) {
+  if (roue.enCours) return;
+  etat.listeCouranteId = id;
+  indexGroupesAffiche = 0;
+  sauver();
+  toutRendre();
+}
+
+function toutRendre() {
+  rendreSelecteurListe();
+  rendreRoue();
+  rendreReglagesGroupes();
+  rendreResultatGroupes(false);
+  rendreListes();
+}
+
+/* ==========================================================================
+   4. ROUE
+   ========================================================================== */
+
+const canevas = $("#canevas-roue");
+const ctxRoue = canevas.getContext("2d");
+const roue = { rotation: 0, enCours: false, noms: [] };
+const DUREES = { court: { ms: 3000, tours: 4 }, normal: { ms: 6000, tours: 7 }, long: { ms: 10000, tours: 10 } };
+
+function dimensionnerRoue() {
+  const boite = $("#roue-boite").getBoundingClientRect();
+  if (!boite.width) return;
+  const dpr = self.devicePixelRatio || 1;
+  const cote = Math.round(boite.width * dpr);
+  if (canevas.width !== cote) { canevas.width = cote; canevas.height = cote; }
+  dessinerRoue();
+}
+self.addEventListener("resize", dimensionnerRoue);
+
+/** Couleur du secteur i : la palette tourne, sans deux voisins identiques. */
+function couleurSecteur(i, n) {
+  let c = i % PALETTE.length;
+  if (n > 1 && i === n - 1 && c === 0) c = 1;
+  return PALETTE[c];
+}
+
+function tronquer(ctx, texte, largeurMax) {
+  if (ctx.measureText(texte).width <= largeurMax) return texte;
+  let t = texte;
+  while (t.length > 1 && ctx.measureText(t + "…").width > largeurMax) t = t.slice(0, -1);
+  return t + "…";
+}
+
+function dessinerRoue() {
+  const W = canevas.width;
+  if (!W) return;
+  const dpr = self.devicePixelRatio || 1;
+  const c = W / 2, r = c - 3 * dpr;
+  const ctx = ctxRoue;
+  ctx.clearRect(0, 0, W, W);
+  const n = roue.noms.length;
+
+  if (!n) {
+    ctx.beginPath(); ctx.arc(c, c, r, 0, Math.PI * 2);
+    ctx.fillStyle = "#ececf1"; ctx.fill();
+    return;
+  }
+
+  const s = Math.PI * 2 / n;
+  const taille = Math.max(10 * dpr, Math.min(r * 0.08, s * r * 0.4));
+  const police = t => `600 ${t}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+  const largeurMax = r * 0.7;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+
+  for (let i = 0; i < n; i++) {
+    const debut = -Math.PI / 2 + roue.rotation + i * s;
+    ctx.beginPath();
+    ctx.moveTo(c, c);
+    ctx.arc(c, c, r, debut, debut + s);
+    ctx.closePath();
+    ctx.fillStyle = couleurSecteur(i, n);
+    ctx.fill();
+    if (n > 1) { ctx.lineWidth = 2 * dpr; ctx.strokeStyle = "#ffffff"; ctx.stroke(); }
+
+    ctx.save();
+    ctx.translate(c, c);
+    ctx.rotate(debut + s / 2);
+    ctx.fillStyle = "#1b1b1f";
+    // Un nom long rétrécit d'abord (jusqu'à 60 %), puis est coupé.
+    ctx.font = police(taille);
+    const largeur = ctx.measureText(roue.noms[i].nom).width;
+    if (largeur > largeurMax) ctx.font = police(Math.max(taille * 0.6, taille * largeurMax / largeur));
+    ctx.fillText(tronquer(ctx, roue.noms[i].nom, largeurMax), r - 16 * dpr, 0);
+    ctx.restore();
+  }
+  // Liseré extérieur
+  ctx.beginPath(); ctx.arc(c, c, r - 2 * dpr, 0, Math.PI * 2);
+  ctx.lineWidth = 5 * dpr; ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.stroke();
+}
+
+/** Indice du secteur situé sous le pointeur (en haut) pour une rotation donnée. */
+function secteurSous(rotation, n) {
+  const s = Math.PI * 2 / n;
+  return Math.floor(modulo(-rotation, Math.PI * 2) / s) % n;
+}
+
+function rendreRoue() {
+  const l = listeCourante();
+  if (!roue.enCours) roue.noms = dansLaRoue(l);
+  const nbPresents = presents(l).length;
+  const n = roue.noms.length;
+  $("#compteur-roue").innerHTML = n + ` <small>/ ${nbPresents}</small>`;
+  $("#detail-roue").textContent =
+    !l.noms.length ? "La liste est vide : ajoutez des noms dans l'onglet Listes."
+    : !nbPresents ? "Tout le monde est marqué absent (onglet Listes)."
+    : !n ? "Tout le monde a été tiré. Cliquez sur « Remettre tout le monde »."
+    : pluriel(n, "nom") + " dans la roue — chacun a exactement la même chance.";
+  $("#btn-centre").disabled = !n || roue.enCours;
+  $("#btn-centre").textContent = n ? "TOURNER" : "VIDE";
+
+  const tires = l.tires;
+  $("#aucun-tire").style.display = tires.length ? "none" : "";
+  $("#liste-tires").innerHTML = tires.map((id, i) => `
+    <li><span class="rang">${i + 1}</span><span class="nom">${echapper(nomParId(l, id))}</span>
+      <button class="btn mini" data-remettre="${id}" title="Remettre ce nom dans la roue">↺</button></li>`).join("");
+  $("#btn-remettre-tous").disabled = !tires.length || roue.enCours;
+
+  $("#opt-retrait").checked = etat.options.retraitAuto;
+  $("#opt-son").checked = etat.options.son;
+  $("#opt-confettis").checked = etat.options.confettis;
+  $("#opt-duree").value = etat.options.duree;
+  dessinerRoue();
+}
+
+$("#liste-tires").addEventListener("click", e => {
+  const b = e.target.closest("[data-remettre]");
+  if (!b || roue.enCours) return;
+  const l = listeCourante();
+  l.tires = l.tires.filter(id => id !== b.dataset.remettre);
+  sauver(); rendreRoue();
+});
+$("#btn-remettre-tous").addEventListener("click", () => {
+  if (roue.enCours) return;
+  listeCourante().tires = [];
+  sauver(); rendreRoue();
+});
+$("#opt-retrait").addEventListener("change", e => { etat.options.retraitAuto = e.target.checked; sauver(); });
+$("#opt-son").addEventListener("change", e => { etat.options.son = e.target.checked; sauver(); });
+$("#opt-confettis").addEventListener("change", e => { etat.options.confettis = e.target.checked; sauver(); });
+$("#opt-duree").addEventListener("change", e => { etat.options.duree = e.target.value; sauver(); });
+
+function tournerRoue() {
+  if (roue.enCours || $("#resultat").classList.contains("visible")) return;
+  const l = listeCourante();
+  roue.noms = dansLaRoue(l);
+  const n = roue.noms.length;
+  if (!n) return;
+  activerAudio();
+
+  // Le gagnant est choisi d'abord (tirage équitable), puis la roue est amenée dessus.
+  const gagnant = aleaEntier(n);
+  const s = Math.PI * 2 / n;
+  const decalage = 0.12 + aleaReel() * 0.76;          // jamais pile sur une frontière
+  const cible = -(gagnant + decalage) * s;
+  const depart = roue.rotation;
+  const reglage = animationsReduites() ? { ms: 700, tours: 1 } : DUREES[etat.options.duree] || DUREES.normal;
+  const delta = modulo(cible - depart, Math.PI * 2) + reglage.tours * Math.PI * 2;
+
+  roue.enCours = true;
+  rendreRoue();
+  const t0 = performance.now();
+  let dernierSecteur = secteurSous(depart, n);
+  const pointeur = $("#pointeur");
+
+  function image(maintenant) {
+    const t = Math.min(1, (maintenant - t0) / reglage.ms);
+    const e = 1 - Math.pow(1 - t, 4);                   // décélération douce
+    roue.rotation = depart + delta * e;
+    dessinerRoue();
+    const secteur = secteurSous(roue.rotation, n);
+    if (secteur !== dernierSecteur) {
+      dernierSecteur = secteur;
+      jouerTic();
+      pointeur.classList.remove("tic"); void pointeur.offsetWidth; pointeur.classList.add("tic");
+    }
+    if (t < 1) { requestAnimationFrame(image); return; }
+    roue.rotation = modulo(roue.rotation, Math.PI * 2);
+    roue.enCours = false;
+    annoncer(roue.noms[gagnant]);
+  }
+  requestAnimationFrame(image);
+}
+$("#btn-centre").addEventListener("click", tournerRoue);
+canevas.addEventListener("click", tournerRoue);
+
+/* --- Fenêtre du résultat --- */
+let resultatCourant = null;   // { id, retire }
+
+function annoncer(nom) {
+  const l = listeCourante();
+  resultatCourant = { id: nom.id, retire: false };
+  if (etat.options.retraitAuto) {
+    l.tires.push(nom.id);
+    resultatCourant.retire = true;
+    sauver();
+  }
+  const g = $("#gagnant");
+  g.textContent = nom.nom;
+  g.style.background = couleurNom(nom.nom);
+  majBoutonResultat();
+  $("#resultat").classList.add("visible");
+  $("#btn-resultat-ok").focus();
+  jouerFanfare();
+  if (etat.options.confettis && !animationsReduites()) lancerConfettis();
+}
+
+function majBoutonResultat() {
+  $("#btn-resultat-action").textContent = resultatCourant.retire ? "↺ Laisser dans la roue" : "Retirer de la roue";
+}
+
+$("#btn-resultat-action").addEventListener("click", () => {
+  const l = listeCourante();
+  if (resultatCourant.retire) l.tires = l.tires.filter(id => id !== resultatCourant.id);
+  else if (!l.tires.includes(resultatCourant.id)) l.tires.push(resultatCourant.id);
+  resultatCourant.retire = !resultatCourant.retire;
+  sauver();
+  majBoutonResultat();
+});
+
+function fermerResultat() {
+  $("#resultat").classList.remove("visible");
+  resultatCourant = null;
+  rendreRoue();
+}
+$("#btn-resultat-ok").addEventListener("click", fermerResultat);
+$("#resultat").addEventListener("click", e => { if (e.target.id === "resultat") fermerResultat(); });
+
+/* --- Sons (Web Audio, rien à télécharger) --- */
+let audio = null;
+function activerAudio() {
+  if (!etat.options.son) return;
+  try {
+    if (!audio) audio = new (self.AudioContext || self.webkitAudioContext)();
+    if (audio.state === "suspended") audio.resume();
+  } catch (e) { audio = null; }
+}
+function note(freq, debut, duree, volume, type) {
+  if (!audio || !etat.options.son) return;
+  const t = audio.currentTime + debut;
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  osc.type = type || "triangle";
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(volume, t + 0.005);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+  osc.connect(gain).connect(audio.destination);
+  osc.start(t);
+  osc.stop(t + duree + 0.02);
+}
+function jouerTic() { note(1400, 0, 0.035, 0.12, "square"); }
+function jouerFanfare() {
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => note(f, i * 0.11, i === 3 ? 0.6 : 0.16, 0.18));
+}
+function jouerSonnerie() {
+  activerAudio();
+  for (let i = 0; i < 3; i++) { note(880, i * 0.45, 0.25, 0.25, "sine"); note(1175, i * 0.45 + 0.12, 0.25, 0.2, "sine"); }
+}
+
+/* --- Confettis --- */
+const toileConfettis = $("#confettis");
+function lancerConfettis() {
+  const ctx = toileConfettis.getContext("2d");
+  const dpr = self.devicePixelRatio || 1;
+  const W = toileConfettis.width = innerWidth * dpr;
+  const H = toileConfettis.height = innerHeight * dpr;
+  const couleurs = PALETTE.concat(["#1d4ed8", "#e63946"]);
+  const bouts = Array.from({ length: 180 }, () => ({
+    x: W / 2 + (aleaReel() - 0.5) * W * 0.3,
+    y: H * 0.45,
+    vx: (aleaReel() - 0.5) * 26 * dpr,
+    vy: (-8 - aleaReel() * 18) * dpr,
+    t: (5 + aleaReel() * 7) * dpr,
+    a: aleaReel() * Math.PI,
+    va: (aleaReel() - 0.5) * 0.4,
+    c: couleurs[aleaEntier(couleurs.length)]
+  }));
+  const t0 = performance.now();
+  function image(maintenant) {
+    const ecoule = maintenant - t0;
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalAlpha = Math.max(0, 1 - Math.max(0, ecoule - 2200) / 800);
+    for (const b of bouts) {
+      b.vy += 0.5 * dpr; b.vx *= 0.985; b.vy *= 0.985;
+      b.x += b.vx; b.y += b.vy; b.a += b.va;
+      ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.a);
+      ctx.fillStyle = b.c; ctx.fillRect(-b.t / 2, -b.t / 4, b.t, b.t / 2);
+      ctx.restore();
+    }
+    if (ecoule < 3000) requestAnimationFrame(image);
+    else ctx.clearRect(0, 0, W, H);
+  }
+  requestAnimationFrame(image);
+}
+
+/* ==========================================================================
+   5. GROUPES
+   ========================================================================== */
+
+const THEMES = {
+  planetes: ["Mercure", "Vénus", "Terre", "Mars", "Jupiter", "Saturne", "Uranus", "Neptune", "Pluton", "Cérès", "Éris", "Makémaké"],
+  elements: ["Hydrogène", "Hélium", "Lithium", "Carbone", "Azote", "Oxygène", "Néon", "Sodium", "Soufre", "Fer", "Cuivre", "Argent", "Or", "Uranium"],
+  animaux: ["Lynx", "Loup", "Chamois", "Bouquetin", "Marmotte", "Aigle", "Castor", "Hibou", "Renard", "Blaireau", "Hérisson", "Cerf", "Gypaète", "Lagopède"],
+  couleurs: ["Rouge", "Bleu", "Vert", "Jaune", "Orange", "Violet", "Rose", "Turquoise", "Noir", "Blanc", "Gris", "Brun"]
+};
+function nomGroupe(i) {
+  const liste = THEMES[etat.options.theme];
+  return liste && liste[i] ? liste[i] : "Groupe " + (i + 1);
+}
+
+let indexGroupesAffiche = 0;   // position dans l'historique des groupes
+let jetonAnimation = 0;
+
+/** Tailles des groupes à former pour n personnes, selon les réglages. */
+function taillesGroupes(n) {
+  if (!n) return [];
+  const o = etat.options;
+  let k = o.modeGroupes === "nombre"
+    ? borner(o.nombreGroupes, 1, n)
+    : Math.max(1, Math.floor(n / borner(o.tailleGroupes, 1, n)));
+  const base = Math.floor(n / k), reste = n % k;
+  return Array.from({ length: k }, (_, i) => base + (i < reste ? 1 : 0));
+}
+
+function rendreReglagesGroupes() {
+  const o = etat.options;
+  $$(".choix-mode .btn").forEach(b => b.classList.toggle("actif", b.dataset.mode === o.modeGroupes));
+  $("#valeur-groupes").value = o.modeGroupes === "nombre" ? o.nombreGroupes : o.tailleGroupes;
+  $("#opt-theme").value = o.theme;
+  $("#opt-eviter").checked = o.eviterRepetitions;
+  $("#opt-roles").checked = o.roles;
+  $("#zone-roles").value = o.listeRoles;
+  $("#zone-roles").style.display = o.roles ? "" : "none";
+
+  const l = listeCourante();
+  const n = presents(l).length;
+  const tailles = taillesGroupes(n);
+  if (!n) {
+    $("#apercu-groupes").textContent = "Aucun élève présent dans cette liste.";
+  } else {
+    const comptes = {};
+    tailles.forEach(t => { comptes[t] = (comptes[t] || 0) + 1; });
+    const detail = Object.keys(comptes).sort((a, b) => b - a)
+      .map(t => pluriel(comptes[t], "groupe") + " de " + t).join(" et ");
+    $("#apercu-groupes").textContent = pluriel(n, "présent") + " → " + detail + ".";
+  }
+  $("#btn-former").disabled = !n;
+
+  // Paires à séparer
+  $("#liste-paires").innerHTML = l.separations.length
+    ? l.separations.map((p, i) => `<span class="paire">${echapper(nomParId(l, p[0]))} ≠ ${echapper(nomParId(l, p[1]))}
+        <button data-sup-paire="${i}" title="Supprimer">✕</button></span>`).join("")
+    : `<span class="discret">Aucune contrainte.</span>`;
+  const options = `<option value="">— choisir —</option>` +
+    l.noms.map(x => `<option value="${x.id}">${echapper(x.nom)}</option>`).join("");
+  $("#paire-a").innerHTML = options;
+  $("#paire-b").innerHTML = options;
+}
+
+$$(".choix-mode .btn").forEach(b => b.addEventListener("click", () => {
+  etat.options.modeGroupes = b.dataset.mode; sauver(); rendreReglagesGroupes();
+}));
+function changerValeurGroupes(v) {
+  const o = etat.options;
+  v = borner(parseInt(v, 10) || 1, 1, 99);
+  if (o.modeGroupes === "nombre") o.nombreGroupes = v; else o.tailleGroupes = v;
+  sauver(); rendreReglagesGroupes();
+}
+$("#valeur-groupes").addEventListener("change", e => changerValeurGroupes(e.target.value));
+$("#btn-moins").addEventListener("click", () => changerValeurGroupes(+$("#valeur-groupes").value - 1));
+$("#btn-plus").addEventListener("click", () => changerValeurGroupes(+$("#valeur-groupes").value + 1));
+$("#opt-theme").addEventListener("change", e => { etat.options.theme = e.target.value; sauver(); });
+$("#opt-eviter").addEventListener("change", e => { etat.options.eviterRepetitions = e.target.checked; sauver(); });
+$("#opt-roles").addEventListener("change", e => { etat.options.roles = e.target.checked; sauver(); rendreReglagesGroupes(); });
+$("#zone-roles").addEventListener("input", e => { etat.options.listeRoles = e.target.value; sauver(); });
+
+$("#btn-ajout-paire").addEventListener("click", () => {
+  const a = $("#paire-a").value, b = $("#paire-b").value;
+  if (!a || !b || a === b) return;
+  const l = listeCourante();
+  if (l.separations.some(p => (p[0] === a && p[1] === b) || (p[0] === b && p[1] === a))) return;
+  l.separations.push([a, b]);
+  sauver(); rendreReglagesGroupes();
+});
+$("#liste-paires").addEventListener("click", e => {
+  const b = e.target.closest("[data-sup-paire]");
+  if (!b) return;
+  listeCourante().separations.splice(+b.dataset.supPaire, 1);
+  sauver(); rendreReglagesGroupes();
+});
+
+function clePaire(a, b) { return a < b ? a + "|" + b : b + "|" + a; }
+
+/**
+ * Forme les groupes : plusieurs mélanges sont essayés et le meilleur est gardé.
+ * Coût : une paire « à séparer » réunie pèse très lourd, un binôme déjà vu la
+ * dernière fois pèse 1. Sans contrainte, le premier mélange est retenu tel quel.
+ */
+function calculerGroupes(l) {
+  const gens = presents(l);
+  const tailles = taillesGroupes(gens.length);
+  const interdits = new Set(l.separations.map(p => clePaire(p[0], p[1])));
+  const dejaVus = new Set();
+  if (etat.options.eviterRepetitions && l.groupes[0]) {
+    l.groupes[0].groupes.forEach(g => {
+      for (let i = 0; i < g.membres.length; i++)
+        for (let j = i + 1; j < g.membres.length; j++) dejaVus.add(clePaire(g.membres[i].id, g.membres[j].id));
+    });
+  }
+
+  function decouper(ordre) {
+    const res = []; let k = 0;
+    tailles.forEach(t => { res.push(ordre.slice(k, k + t)); k += t; });
+    return res;
+  }
+  function cout(groupes) {
+    let c = 0;
+    groupes.forEach(g => {
+      for (let i = 0; i < g.length; i++)
+        for (let j = i + 1; j < g.length; j++) {
+          const cle = clePaire(g[i].id, g[j].id);
+          if (interdits.has(cle)) c += 1000;
+          else if (dejaVus.has(cle)) c += 1;
+        }
+    });
+    return c;
+  }
+
+  let meilleur = null, meilleurCout = Infinity;
+  for (let essai = 0; essai < 3000 && meilleurCout > 0; essai++) {
+    const groupes = decouper(melanger(gens.slice()));
+    const c = cout(groupes);
+    if (c < meilleurCout) { meilleur = groupes; meilleurCout = c; }
+  }
+
+  const roles = etat.options.roles
+    ? etat.options.listeRoles.split(/\r?\n/).map(s => s.trim()).filter(Boolean) : [];
+  return {
+    id: uid("gr"),
+    date: new Date().toISOString(),
+    conflits: Math.floor(meilleurCout / 1000),
+    groupes: meilleur.map((g, i) => ({
+      nom: nomGroupe(i),
+      membres: g.map((p, j) => ({ id: p.id, nom: p.nom, role: roles[j] || "" }))
+    }))
+  };
+}
+
+$("#btn-former").addEventListener("click", () => {
+  const l = listeCourante();
+  if (!presents(l).length) return;
+  const res = calculerGroupes(l);
+  l.groupes.unshift(res);
+  l.groupes = l.groupes.slice(0, MAX_HISTORIQUE_GROUPES);
+  indexGroupesAffiche = 0;
+  sauver();
+  rendreResultatGroupes(true);
+  if (res.conflits) {
+    alert("Impossible de respecter toutes les séparations avec ces tailles de groupes (" +
+      pluriel(res.conflits, "contrainte non respectée", "contraintes non respectées") + ").");
+  }
+});
+
+$("#choix-historique").addEventListener("change", e => {
+  indexGroupesAffiche = +e.target.value;
+  rendreResultatGroupes(false);
+});
+
+function groupesAffiches() { return listeCourante().groupes[indexGroupesAffiche] || null; }
+
+function rendreResultatGroupes(anime) {
+  const l = listeCourante();
+  const res = groupesAffiches();
+  const jeton = ++jetonAnimation;
+
+  $("#choix-historique").innerHTML = l.groupes.length
+    ? l.groupes.map((g, i) => `<option value="${i}" ${i === indexGroupesAffiche ? "selected" : ""}>${i === 0 ? "Derniers groupes" : "Groupes"} du ${dateLisible(g.date)}</option>`).join("")
+    : `<option>Pas encore de groupes</option>`;
+  $("#choix-historique").disabled = !l.groupes.length;
+  $("#btn-copier-groupes").disabled = !res;
+  $("#btn-imprimer-groupes").disabled = !res;
+  $("#aide-glisser").style.display = res ? "" : "none";
+  $("#titre-impression").textContent = res ? l.nom + " — groupes du " + dateLisible(res.date) : "";
+
+  const grille = $("#grille-groupes");
+  if (!res) {
+    grille.innerHTML = `<div class="vide" style="grid-column:1/-1">Choisissez les réglages à droite, puis cliquez sur « Former les groupes ».</div>`;
+    return;
+  }
+  grille.innerHTML = res.groupes.map((g, gi) => `
+    <div class="groupe" data-groupe="${gi}" style="--teinte:${PALETTE[gi % PALETTE.length]}">
+      <div class="tete"><span>${echapper(g.nom)}</span><span class="nb">${g.membres.length}</span></div>
+      <ul>${g.membres.map(m => `
+        <li class="membre${anime ? " cache" : ""}" draggable="true" data-id="${m.id}" style="--fond-membre:${couleurNom(m.nom)}">
+          ${echapper(m.nom)}${m.role ? `<em>${echapper(m.role)}</em>` : ""}</li>`).join("")}
+      </ul>
+    </div>`).join("");
+
+  if (!anime) return;
+  // Distribution « comme des cartes » : un nom par groupe, tour après tour.
+  const colonnes = $$(".groupe", grille).map(g => $$(".membre", g));
+  const ordre = [];
+  const max = Math.max(...colonnes.map(c => c.length));
+  for (let i = 0; i < max; i++) colonnes.forEach(c => { if (c[i]) ordre.push(c[i]); });
+  const pas = animationsReduites() ? 0 : Math.min(110, 2600 / ordre.length);
+  ordre.forEach((el, i) => setTimeout(() => {
+    if (jeton !== jetonAnimation) return;
+    el.classList.remove("cache");
+    el.classList.add("pop");
+    if (i % 2 === 0) jouerTic();
+  }, i * pas));
+  activerAudio();
+}
+
+/* --- Ajustement à la main (glisser-déposer) --- */
+const grilleGroupes = $("#grille-groupes");
+let idGlisse = null;
+grilleGroupes.addEventListener("dragstart", e => {
+  const m = e.target.closest(".membre");
+  if (!m) return;
+  idGlisse = m.dataset.id;
+  m.classList.add("glisse");
+  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.setData("text/plain", idGlisse);
+});
+grilleGroupes.addEventListener("dragend", () => {
+  idGlisse = null;
+  $$(".membre.glisse, .groupe.survol").forEach(el => el.classList.remove("glisse", "survol"));
+});
+grilleGroupes.addEventListener("dragover", e => {
+  const g = e.target.closest(".groupe");
+  if (!g || !idGlisse) return;
+  e.preventDefault();
+  $$(".groupe.survol").forEach(x => { if (x !== g) x.classList.remove("survol"); });
+  g.classList.add("survol");
+});
+grilleGroupes.addEventListener("drop", e => {
+  const g = e.target.closest(".groupe");
+  const res = groupesAffiches();
+  if (!g || !idGlisse || !res) return;
+  e.preventDefault();
+  let membre = null;
+  res.groupes.forEach(gr => {
+    const i = gr.membres.findIndex(m => m.id === idGlisse);
+    if (i >= 0) membre = gr.membres.splice(i, 1)[0];
+  });
+  if (membre) res.groupes[+g.dataset.groupe].membres.push(membre);
+  idGlisse = null;
+  sauver();
+  rendreResultatGroupes(false);
+});
+
+function texteGroupes(res) {
+  return res.groupes.map(g => g.nom + " : " +
+    g.membres.map(m => m.nom + (m.role ? " (" + m.role + ")" : "")).join(", ")).join("\n");
+}
+$("#btn-copier-groupes").addEventListener("click", e => {
+  const res = groupesAffiches();
+  if (res) copierTexte(texteGroupes(res), e.currentTarget);
+});
+$("#btn-imprimer-groupes").addEventListener("click", () => self.print());
+
+/* ==========================================================================
+   6. OUTILS
+   ========================================================================== */
+
+/* --- Ordre de passage --- */
+let dernierOrdre = [];
+$("#btn-ordre").addEventListener("click", () => {
+  const l = listeCourante();
+  dernierOrdre = melanger(presents(l).map(n => n.nom));
+  const pas = animationsReduites() ? 0 : Math.min(60, 1500 / Math.max(1, dernierOrdre.length));
+  $("#ordre-passage").innerHTML = dernierOrdre.length
+    ? dernierOrdre.map((nom, i) => `<li style="animation-delay:${i * pas}ms">${echapper(nom)}</li>`).join("")
+    : `<li class="discret">Aucun nom présent dans la liste « ${echapper(l.nom)} ».</li>`;
+});
+$("#btn-copier-ordre").addEventListener("click", e => {
+  if (dernierOrdre.length) copierTexte(dernierOrdre.map((n, i) => (i + 1) + ". " + n).join("\n"), e.currentTarget);
+});
+
+/* --- Minuteur --- */
+const minuteur = { total: 300000, reste: 300000, fin: 0, actif: false, intervalle: null };
+function formatTemps(ms) {
+  const s = Math.ceil(ms / 1000);
+  return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+}
+function afficherMinuteur() {
+  $("#minuteur").textContent = formatTemps(minuteur.reste);
+  $("#barre-temps").style.width = (100 * minuteur.reste / minuteur.total) + "%";
+  $("#btn-minuteur").textContent = minuteur.actif ? "Pause" : (minuteur.reste < minuteur.total && minuteur.reste > 0 ? "Reprendre" : "Démarrer");
+}
+function arreterMinuteur() { clearInterval(minuteur.intervalle); minuteur.actif = false; }
+function regleMinuteur(minutes) {
+  arreterMinuteur();
+  minuteur.total = minuteur.reste = minutes * 60000;
+  $("#minuteur").classList.remove("fini");
+  afficherMinuteur();
+}
+$("#presets-minuteur").addEventListener("click", e => {
+  const b = e.target.closest("[data-min]");
+  if (b) regleMinuteur(+b.dataset.min);
+});
+$("#btn-minuteur").addEventListener("click", () => {
+  if (minuteur.actif) {
+    minuteur.reste = Math.max(0, minuteur.fin - Date.now());
+    arreterMinuteur(); afficherMinuteur(); return;
+  }
+  if (minuteur.reste <= 0) minuteur.reste = minuteur.total;
+  activerAudio();
+  $("#minuteur").classList.remove("fini");
+  minuteur.actif = true;
+  minuteur.fin = Date.now() + minuteur.reste;
+  minuteur.intervalle = setInterval(() => {
+    minuteur.reste = Math.max(0, minuteur.fin - Date.now());
+    if (minuteur.reste <= 0) {
+      arreterMinuteur();
+      $("#minuteur").classList.add("fini");
+      jouerSonnerie();
+    }
+    afficherMinuteur();
+  }, 200);
+  afficherMinuteur();
+});
+$("#btn-minuteur-raz").addEventListener("click", () => regleMinuteur(minuteur.total / 60000));
+
+/* --- Pile ou face --- */
+let anglePiece = 0;
+const statsPiece = { pile: 0, face: 0 };
+let pieceEnVol = false;
+$("#btn-piece").addEventListener("click", () => {
+  if (pieceEnVol) return;
+  const face = aleaEntier(2) === 1;          // false = pile, true = face
+  // Plusieurs tours complets, puis on s'arrête sur le bon côté.
+  const base = anglePiece - modulo(anglePiece, 360) + 360 * 5;
+  anglePiece = base + (face ? 180 : 0);
+  pieceEnVol = true;
+  $("#piece").style.transform = `rotateY(${anglePiece}deg)`;
+  $("#stats-piece").textContent = "…";
+  setTimeout(() => {
+    pieceEnVol = false;
+    statsPiece[face ? "face" : "pile"]++;
+    $("#stats-piece").textContent = (face ? "FACE" : "PILE") + " — depuis l'ouverture : " +
+      statsPiece.pile + " pile, " + statsPiece.face + " face";
+  }, animationsReduites() ? 50 : 1650);
+});
+
+/* --- Dés --- */
+let desEnCours = false;
+function dessinerDes(valeurs, roulent) {
+  $("#des").innerHTML = valeurs.map(v => `<div class="de${roulent ? " roule" : ""}">${v}</div>`).join("");
+}
+$("#btn-des").addEventListener("click", () => {
+  if (desEnCours) return;
+  const nb = +$("#nb-des").value, faces = +$("#faces-des").value;
+  const tirer = () => Array.from({ length: nb }, () => 1 + aleaEntier(faces));
+  const final = tirer();
+  desEnCours = true;
+  $("#total-des").textContent = "";
+  let etapes = animationsReduites() ? 0 : 12;
+  const boucle = setInterval(() => {
+    if (etapes-- > 0) { dessinerDes(tirer(), true); return; }
+    clearInterval(boucle);
+    desEnCours = false;
+    dessinerDes(final, false);
+    $("#total-des").textContent = nb > 1 ? "Total : " + final.reduce((a, b) => a + b, 0) : "";
+  }, 60);
+});
+dessinerDes(["?", "?"], false);
+$("#nb-des").addEventListener("change", () => { dessinerDes(Array(+$("#nb-des").value).fill("?"), false); $("#total-des").textContent = ""; });
+
+/* --- Nombre au hasard --- */
+let nombreEnCours = false;
+$("#btn-nombre").addEventListener("click", () => {
+  if (nombreEnCours) return;
+  let a = Math.round(+$("#nb-min").value), b = Math.round(+$("#nb-max").value);
+  if (!isFinite(a) || !isFinite(b)) return;
+  if (a > b) { const t = a; a = b; b = t; }
+  const tirer = () => a + aleaEntier(b - a + 1);
+  const final = tirer();
+  nombreEnCours = true;
+  let etapes = animationsReduites() ? 0 : 14;
+  const boucle = setInterval(() => {
+    if (etapes-- > 0) { $("#nb-resultat").textContent = tirer(); return; }
+    clearInterval(boucle);
+    nombreEnCours = false;
+    $("#nb-resultat").textContent = final;
+  }, 55);
+});
+
+/* ==========================================================================
+   7. LISTES
+   ========================================================================== */
+
+function rendreListes() {
+  const l = listeCourante();
+  $("#liste-listes").innerHTML = etat.listes.map(x => `
+    <li><button data-liste="${x.id}" class="${x.id === l.id ? "actif" : ""}">
+      <span>${echapper(x.nom)}</span><span class="nb">${x.noms.length}</span></button></li>`).join("");
+  const zone = $("#zone-noms");
+  if (document.activeElement !== zone) zone.value = l.noms.map(n => n.nom).join("\n");
+  rendrePastilles();
+  $("#btn-supprimer-liste").disabled = etat.listes.length <= 1;
+}
+
+function rendrePastilles() {
+  const l = listeCourante();
+  $("#pastilles").innerHTML = l.noms.length
+    ? l.noms.map(n => `<button class="pastille${n.absent ? " absente" : ""}" data-pastille="${n.id}" title="${n.absent ? "Absent — cliquer pour marquer présent" : "Présent — cliquer pour marquer absent"}">
+        <span class="point" style="background:${couleurNom(n.nom)}"></span>${echapper(n.nom)}</button>`).join("")
+    : `<span class="discret">Aucun nom pour l'instant.</span>`;
+  const abs = l.noms.filter(n => n.absent).length;
+  $("#compteur-noms").textContent = l.noms.length
+    ? pluriel(l.noms.length - abs, "présent") + (abs ? " · " + pluriel(abs, "absent") : "") : "";
+}
+
+$("#liste-listes").addEventListener("click", e => {
+  const b = e.target.closest("[data-liste]");
+  if (b) changerListe(b.dataset.liste);
+});
+$("#pastilles").addEventListener("click", e => {
+  const b = e.target.closest("[data-pastille]");
+  if (!b) return;
+  const n = listeCourante().noms.find(x => x.id === b.dataset.pastille);
+  if (n) { n.absent = !n.absent; sauver(); toutRendre(); }
+});
+$("#btn-tous-presents").addEventListener("click", () => {
+  listeCourante().noms.forEach(n => { n.absent = false; });
+  sauver(); toutRendre();
+});
+
+/** Relit la zone de texte en conservant les identifiants (et donc les absences, tirages…). */
+function appliquerNoms() {
+  const l = listeCourante();
+  const lignes = $("#zone-noms").value.split(/\r?\n/)
+    .map(s => s.replace(/[\t;]+/g, " ").replace(/\s+/g, " ").trim()).filter(Boolean).slice(0, 500);
+  const existants = new Map();
+  l.noms.forEach(n => {
+    const k = n.nom.toLowerCase();
+    if (!existants.has(k)) existants.set(k, []);
+    existants.get(k).push(n);
+  });
+  l.noms = lignes.map(nom => {
+    const file = existants.get(nom.toLowerCase());
+    const ancien = file && file.shift();
+    return ancien ? Object.assign(ancien, { nom }) : { id: uid("n"), nom, absent: false };
+  });
+  nettoyerListe(l);
+  sauver();
+  rendreSelecteurListe();
+  rendreRoue();
+  rendreReglagesGroupes();
+  rendreListes();
+}
+let minuterieNoms = null;
+$("#zone-noms").addEventListener("input", () => { clearTimeout(minuterieNoms); minuterieNoms = setTimeout(appliquerNoms, 350); });
+$("#zone-noms").addEventListener("blur", () => { clearTimeout(minuterieNoms); appliquerNoms(); });
+
+function demanderNom(message, defaut) {
+  const nom = prompt(message, defaut || "");
+  return nom && nom.trim() ? nom.trim().slice(0, 60) : null;
+}
+$("#btn-nouvelle-liste").addEventListener("click", () => {
+  const nom = demanderNom("Nom de la nouvelle liste (ex. 10H-B, Sujets d'exposé…) :");
+  if (!nom) return;
+  const l = nouvelleListe(nom, []);
+  etat.listes.push(l);
+  changerListe(l.id);
+  $("#zone-noms").focus();
+});
+$("#btn-renommer-liste").addEventListener("click", () => {
+  const l = listeCourante();
+  const nom = demanderNom("Nouveau nom de la liste :", l.nom);
+  if (!nom) return;
+  l.nom = nom; sauver(); toutRendre();
+});
+$("#btn-dupliquer-liste").addEventListener("click", () => {
+  const l = listeCourante();
+  const copie = nouvelleListe(l.nom + " (copie)", l.noms.map(n => n.nom));
+  etat.listes.push(copie);
+  changerListe(copie.id);
+});
+$("#btn-supprimer-liste").addEventListener("click", () => {
+  const l = listeCourante();
+  if (etat.listes.length <= 1) return;
+  if (!confirm(`Supprimer définitivement la liste « ${l.nom} » ?`)) return;
+  etat.listes = etat.listes.filter(x => x.id !== l.id);
+  changerListe(etat.listes[0].id);
+});
+
+/* --- Export / import JSON --- */
+function telecharger(nomFichier, blob) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = nomFichier;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+$("#btn-export-json").addEventListener("click", () => {
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  const blob = new Blob([JSON.stringify(Object.assign({ app: "random-spin" }, etat), null, 2)], { type: "application/json" });
+  telecharger(`random-spin-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`, blob);
+});
+$("#btn-import-json").addEventListener("click", () => $("#fichier-import").click());
+$("#fichier-import").addEventListener("change", e => {
+  const fichier = e.target.files[0];
+  e.target.value = "";
+  if (!fichier) return;
+  const lecteur = new FileReader();
+  lecteur.onload = () => {
+    try {
+      const d = JSON.parse(lecteur.result);
+      if (Array.isArray(d.listes)) {
+        if (!confirm("Remplacer toutes les listes actuelles par celles du fichier ?")) return;
+        etat = normaliser(d);
+        delete etat.app;
+      } else if (Array.isArray(d.classes)) {
+        // Export « Plan de Classe » : chaque classe devient une liste (ajoutée).
+        const nouvelles = d.classes
+          .filter(c => Array.isArray(c.eleves))
+          .map(c => {
+            const l = nouvelleListe(String(c.nom || "Classe"), []);
+            l.noms = c.eleves.filter(el => el && el.nom).map(el => ({ id: uid("n"), nom: String(el.nom), absent: !!el.absent }));
+            return l;
+          });
+        if (!nouvelles.length) throw new Error("aucune classe");
+        etat.listes.push(...nouvelles);
+        etat.listeCouranteId = nouvelles[0].id;
+        alert(pluriel(nouvelles.length, "classe importée", "classes importées") + " depuis Plan de Classe.");
+      } else {
+        throw new Error("format inconnu");
+      }
+      indexGroupesAffiche = 0;
+      sauver();
+      toutRendre();
+    } catch (err) {
+      alert("Ce fichier n'est pas un export « Random Spin » ou « Plan de Classe » valide.");
+    }
+  };
+  lecteur.readAsText(fichier);
+});
+
+/* ==========================================================================
+   8. PROJECTION & CLAVIER
+   ========================================================================== */
+
+function basculerProjection(activer) {
+  const actif = typeof activer === "boolean" ? activer : !document.body.classList.contains("projection");
+  document.body.classList.toggle("projection", actif);
+  try {
+    if (actif && !document.fullscreenElement && document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else if (!actif && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  } catch (e) { /* plein écran refusé : la projection reste utilisable */ }
+  setTimeout(dimensionnerRoue, 60);
+}
+$("#btn-projection").addEventListener("click", () => basculerProjection(true));
+$("#btn-quitter-projection").addEventListener("click", () => basculerProjection(false));
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement && document.body.classList.contains("projection")) basculerProjection(false);
+  else setTimeout(dimensionnerRoue, 60);
+});
+
+document.addEventListener("keydown", e => {
+  const cible = e.target;
+  const saisie = cible && (cible.tagName === "INPUT" || cible.tagName === "TEXTAREA" || cible.tagName === "SELECT");
+  const bouton = cible && cible.tagName === "BUTTON" && cible.id !== "btn-centre";
+  if ($("#resultat").classList.contains("visible")) {
+    if (e.key === "Escape" || (!bouton && (e.key === "Enter" || e.key === " "))) { e.preventDefault(); fermerResultat(); }
+    return;
+  }
+  if (saisie || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (bouton && (e.key === " " || e.key === "Enter")) return;
+  if ((e.key === " " || e.key === "Enter") && etat.options.ecran === "roue") {
+    e.preventDefault();
+    tournerRoue();
+  } else if (e.key === "f" || e.key === "F") {
+    basculerProjection();
+  } else if (e.key === "Escape" && document.body.classList.contains("projection")) {
+    basculerProjection(false);
+  }
+});
+
+/* ==========================================================================
+   9. DÉMARRAGE
+   ========================================================================== */
+
+etat = charger();
+toutRendre();
+afficherMinuteur();
+allerEcran(etat.options.ecran);
+</script>
+</body>
+</html>

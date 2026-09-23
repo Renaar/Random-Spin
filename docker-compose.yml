@@ -1,0 +1,15 @@
+# Random Spin — service statique servi par nginx.
+# Emplacement attendu sur le serveur : /opt/stacks/random-spin/
+services:
+  random-spin:
+    image: nginx:alpine
+    container_name: random-spin
+    restart: unless-stopped
+    ports:
+      - "3004:80"
+    volumes:
+      # Seul le dossier public/ est monté (en lecture seule) : le reste du dépôt,
+      # dont .git, n'est jamais exposé sur le réseau.
+      - ./public:/usr/share/nginx/html:ro
+    environment:
+      TZ: Europe/Zurich

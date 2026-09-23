@@ -1,0 +1,39 @@
+# Publie l'application sur GitHub Pages (facultatif, pour tester à distance).
+#
+# Utile seulement si Pages est réglé sur « Source: GitHub Actions » (Settings > Pages).
+# La toute première activation de Pages doit se faire dans l'interface web.
+name: GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploiement:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Configurer Pages
+        uses: actions/configure-pages@v5
+
+      - name: Téléverser l'artefact (uniquement public/)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Déployer
+        id: deploiement
+        uses: actions/deploy-pages@v4
